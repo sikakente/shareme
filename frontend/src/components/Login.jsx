@@ -1,16 +1,21 @@
 import { GoogleLogin } from "@react-oauth/google";
 import jwt_decode from "jwt-decode";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import logo from "../assets/logowhite.png";
 import shareVideo from "../assets/share.mp4";
 
+import { client } from "../client";
+
 const Login = () => {
+  const navigate = useNavigate();
+
   const responseGoogle = (response) => {
     console.log("Login successful");
 
     const { credential } = response;
     const userObject = jwt_decode(credential);
-    console.log(userObject)
+    console.log(userObject);
     localStorage.setItem("user", JSON.stringify(userObject));
     const { name, sub, picture } = userObject;
     const doc = {
@@ -19,7 +24,13 @@ const Login = () => {
       userName: name,
       image: picture,
     };
-    console.log(response);
+
+    client
+      .createIfNotExists(doc)
+      .then(() => {
+        navigate("/", { replace: true });
+      })
+      .catch((error) => console.log(error));
   };
 
   const handleLoginError = () => {
